@@ -9,8 +9,10 @@ import operator
 
 ROW = 5
 COL = 6
-MAX_TURN = 40
-BEAM_WIDTH = 5000
+#MAX_TURN = 40
+MAX_TURN = 4
+#BEAM_WIDTH = 5000
+BEAM_WIDTH = 8
 
 class member(): # route pattern{{{
     def __init__(self, nowC, nowR, prev=-1, length=MAX_TURN):
@@ -19,14 +21,6 @@ class member(): # route pattern{{{
         self.nowR  = nowR # now row
         self.prev = prev # previous position (1:up, 2:down, 3:left, 4:right, -1:None)
         self.movei = [[-1] * 2] * length
-    def operator(self):
-        # higher score returned... (not finished)
-        return self.score# }}}
-
-#class Action():# {{{
-#    def __init__(self, length=MAX_TURN):
-#        self.score = 0
-#        self.moving = [[-1] * 2] * length# }}}
 
 class pd_combo():
     def __init__(self, row=5, col=6, field=None, max_turn=MAX_TURN, beam_width=BEAM_WIDTH):# {{{
@@ -215,37 +209,50 @@ class pd_combo():
         for i in range(self.row):
             for j in range(self.col):
                 cand = member(j, i, -1)
-                cand.movei[0][0] = j
-                cand.movei[0][1] = i
+                cand.movei[0]= [j, i]
                 queue.append(cand)
+        #print("len(queue):"+str(len(queue)))
+        #print("type(queue[0]):"+str(type(queue[0])))
+        #print("queue[i].movei:")
+        #for i in range(len(queue)):
+        #    pprint.pprint(queue[i].movei)
+        #    #print(queue[i])
+
         dx = [-1,  0, 0, 1]
         dy = [ 0, -1, 1, 0]
 
         #best_action = Action()
         #max_value = 0
 
-        for p in range(self.max_turn):
+        for p in range(1,self.max_turn):
             pqueue = []
             for q in range(len(queue)):
-                temp = queue[q]
+                temp = copy.deepcopy(queue[q])
                 for j in range(len(dx)):
-                    self.field = copy.deepcopy(self.f_field)  # back to first field
-                    cand = temp
-                    if ( 0 <= cand.nowC + dx[j] < self.col and \
-                            0 <= cand.nowR + dy[j] < self.row ):
+                    self.field = copy.deepcopy(self.f_field)
+                    cand = copy.deepcopy(temp)
+                    if ( 0 <= temp.nowC + dx[j] < self.col and \
+                            0 <= temp.nowR + dy[j] < self.row ):
                         if cand.prev + j == 3:
                             continue
-                        cand.nowC += dx[j]
-                        cand.nowR += dy[j]
-                        cand.movei[p][0] = cand.nowC
-                        cand.movei[p][1] = cand.nowR
-                        route = copy.deepcopy(cand.movei)
+                        cand.nowC = temp.nowC + dx[j]
+                        cand.nowR = temp.nowR + dy[j]
+                        cand.movei[p] = [cand.nowC, cand.nowR]
+                        #print("q:"+str(q)+", p:"+str(p)+", cand.nowC:"+str(cand.nowC)+", cand.nowR:"+str(cand.nowR))
+                        #print("cand.movei", end="")
+                        #print(cand.movei)
+                        self.route = copy.deepcopy(cand.movei)
                         self.operation()
+                        #print("operated field")
+                        self.show_field()
                         cand.score = self.sum_e()
+                        #print("cand.score:"+str(cand.score))
                         cand.prev = j
                         pqueue.append(cand)
 
-            pqueue.sort(key=operator.attrgetter("score"))
+            pqueue.sort(key=operator.attrgetter("score"), reverse=True)
+            #print("pqueue[0].score:"+str(pqueue[0].score))
+            #print("pqueue[1].score:"+str(pqueue[1].score))
 
             queue = []
             if self.beam_width < len(pqueue):
@@ -254,33 +261,38 @@ class pd_combo():
                 width = len(pqueue)
             for i in range(width):
                 queue.append(pqueue[i])
+            #print("len(queue):"+str(len(queue)))
 
         return queue[0] # best route(=movei)
 
 # }}}
 
 if __name__ == "__main__":
+
     avg = 0
     repeat_count = 1
     for i in range(repeat_count):
-        pd_cmb = pd_combo(ROW, COL)
+        #pd_cmb = pd_combo(3, 4)
+        pd_cmb = pd_combo(4, 5)
         pd_cmb.set()  # make initial filed
         pd_cmb.show_field()
         pd_cmb.f_field = copy.deepcopy(pd_cmb.field)  # copy initial field
         best_member = pd_cmb.beam_search()  # best member(route, score,,,)
-        print("(x, y): ("+str(best_member.movei[0][0])+", "+str(best_member.movei[0][1]))
-        for i in range(best_member.max_turn):
-            if best_member.movei[i][0] == -1 or best_member.movei[i][1] == -1 :
-                break
-            if best_member.movei[i][0] == (best_member.movei[i - 1][0] + 1):
-                print("RIGHT")
-            if best_member.movei[i][0] == (best_member.movei[i - 1][0] - 1):
-                print("LEFT")
-            if best_member.movei[i][1] == (best_member.movei[i - 1][1] + 1):
-                print("UP")
-            if best_member.movei[i][1] == (best_member.movei[i - 1][1] - 1):
-                print("DOWN")
-            print("\n")
+        #print("(x, y): ("+str(best_member.movei[0][0])+", "+str(best_member.movei[0][1])+")")
+        #print(best_member.movei)
+
+        #for i in range(pd_cmb.max_turn):
+        #    if best_member.movei[i][0] == -1 or best_member.movei[i][1] == -1 :
+        #        break
+        #    if best_member.movei[i][0] == (best_member.movei[i - 1][0] + 1):
+        #        print("RIGHT")
+        #    if best_member.movei[i][0] == (best_member.movei[i - 1][0] - 1):
+        #        print("LEFT")
+        #    if best_member.movei[i][1] == (best_member.movei[i - 1][1] + 1):
+        #        print("UP")
+        #    if best_member.movei[i][1] == (best_member.movei[i - 1][1] - 1):
+        #        print("DOWN")
+        #    print("\n")
         avg += best_member.score
     print("avarage score:"+str(avg/repeat_count))
 
