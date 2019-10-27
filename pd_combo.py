@@ -8,7 +8,7 @@ ROW = 5
 COL = 6
 
 class pd_combo():
-    def __init__(self, row, col, field=None):
+    def __init__(self, row, col, field=None):# {{{
         self.row = row
         self.col = col
         if field != None:
@@ -20,7 +20,7 @@ class pd_combo():
         self.t_erace = [[0 for _ in range(col)] for _ in range(row)]
         self.route_x = [0] * 100
         self.route_y = [0] * 100
-        self.max_count = 0
+        self.max_count = 0# }}}  # chained drop count
 
     def make_field(self):# {{{
         for i in range(self.row):
@@ -31,6 +31,24 @@ class pd_combo():
         for i in range(self.row):
             for j in range(self.col):
                 print(self.field[i][j], end="")
+            print("\n", end="")# }}}
+
+    def show_chainflag(self):# {{{
+        for i in range(self.row):
+            for j in range(self.col):
+                print(self.chainflag[i][j], end="")
+            print("\n", end="")# }}}
+
+    def show_dummy(self):# {{{
+        for i in range(self.row):
+            for j in range(self.col):
+                print(self.dummy[i][j], end="")
+            print("\n", end="")# }}}
+
+    def show_t_erace(self):# {{{
+        for i in range(self.row):
+            for j in range(self.col):
+                print(self.t_erace[i][j], end="")
             print("\n", end="")# }}}
 
     def fall(self):# {{{
@@ -49,119 +67,110 @@ class pd_combo():
                 if self.field[i][j] == 0:
                     self.field[i][j] = random.randint(1, 6)# }}}
 
-# field = [[0 for _ in range(COL)] for _ in range(ROW)]
-# chainflag = [[0 for _ in range(COL)] for _ in range(ROW)]
-# dummy = [[0 for _ in range(COL)] for _ in range(ROW)]
-# t_erace = [[0 for _ in range(COL)] for _ in range(ROW)]
-# route_x = [0] * 100
-# route_y = [0] * 100
-# max_count = 0
+    def swap(self, i1, j1, i2, j2):# {{{
+        temp = self.field[i1][j1]
+        self.field[i1][j1] = self.field[i2][j2]
+        self.field[i2][j2] = temp# }}}
 
-# def init():# {{{
-#     field = [[random.randint(0, 6) for _ in range(COL)] for _ in range(ROW)]
-#     return field# }}}
+    def operation(self):# {{{
+        self.route_x[0]=0
+        self.route_y[0]=0
 
-def swap(field, i1, j1, i2, j2):# {{{
-    temp = field[i1][j1]
-    field[i1][j1] = field[i2][j2]
-    field[i2][j2] = temp# }}}
+        self.route_x[1]=1
+        self.route_y[1]=0
 
-def chain(now_row, now_col, drop, count, max_count):
-    # if out of filed range, return
-    if now_row == -1 or now_row == ROW or now_col == -1 or now_col == COL:
-        return
-    # if same color drop is not searced
-    if field[now_row][now_col] == drop and chainflag[now_row][now_col] == 0:
-        chainflag[now_row][now_col] = -1   # searched
-        if max_count < count:
-            max_count = count
-        dummy[now_row][now_col] = -1
+        self.route_x[2]=2
+        self.route_y[2]=0
 
-        chain(now_row - 1, now_col, drop, count + 1, max_count)
-        chain(now_row + 1, now_col, drop, count + 1, max_count)
-        chain(now_row, now_col - 1, drop, count + 1, max_count)
-        chain(now_row, now_col + 1, drop, count + 1, max_count)
+        self.route_x[3]=3
+        self.route_y[3]=0
 
-def check(field):# {{{
-    v = 0
-    for i in range(ROW):
-        for j in range(COL - 2):
-            if dummy[i][j] == -1 and dummy[i][j + 1] == -1 and dummy[i][j + 2] == -1 and \
-             field[i][j] == field[i][j + 1] and field[i][j] == field[i][j +2]:
-                t_erace[i][j] = -1
-                t_erace[i][j + 1] = -1
-                t_erace[i][j + 2] = -1
-                v = 1
+        self.route_x[4]=4
+        self.route_y[4]=0
 
-    for i in range(ROW - 2):
-        for j in range(COL):
-            if dummy[i][j] == -1 and dummy[i + 1][j] == -1 and dummy[i + 2][j] == -1 and \
-             field[i][j] == field[i + 1][j] and field[i][j] == field[i + 2][j]:
-                t_erace[i][j] = -1
-                t_erace[i + 1][j] = -1
-                t_erace[i + 2][j] = -1
-                v = 1
-    return v  # 0: 0 combo, 1: some combo
-# }}}
+        self.route_x[5]=5
+        self.route_y[5]=0
 
-def evaluate(field, max_count):# {{{
-    value = 0
-    chainflag = [[0 for _ in range(COL)] for _ in range(ROW)]
-    for i in range(ROW):
-        for j in range(COL):
-            if chainflag[i][j] == 0 and field[i][j] != 0:
-                max_count = 0
-                dummy = [[0 for _ in range(COL)] for _ in range(ROW)]
-                chain(i, j, field[i][j], 1, max_count)
-                if max_count >= 3:
-                    if check() == 1:
-                        value += 1
-    return value# }}}
+        self.route_x[6]=6
+        self.route_y[6]=0
 
-def sum_e(field, max_count): # {{{
-    # consider "otoshi",  not consider "ochikon" , and caliculate combo
-    combo = 0
-    while(1):
-        t_erace = [[0 for _ in range(COL)] for _ in range(ROW)]
-        a = evaluate(field, max_count)
-        if a == 0:  # when 0 combo, break
-            break
-        for i in range(ROW):
-            for j in range(COL):
-                if t_erace[i][j] == -1:
-                    field[i][j] = 0  # clear combo drop
-        fall(field)
-        combo += a# }}}
+        now_col = self.route_x[0]
+        now_row = self.route_y[0]
 
-def operation(field):# {{{
-    route_x[0]=0
-    route_y[0]=0
+        for i in range(6):
+            self.swap(now_row, now_col, self.route_y[i], self.route_x[i])
+            now_col = self.route_x[i]
+            now_row = self.route_y[i]# }}}
 
-    route_x[1]=1
-    route_y[1]=0
+    def chain(self, now_row, now_col, drop, count):# {{{
+        # if out of filed range, return
+        if now_row == -1 or now_row == self.row or now_col == -1 or now_col == self.col:
+            return
+        # if same color drop is not searced
+        if self.field[now_row][now_col] == drop and self.chainflag[now_row][now_col] == 0:
+            self.chainflag[now_row][now_col] = -1   # searched
+            if self.max_count < count:
+                self.max_count = count
+            self.dummy[now_row][now_col] = -1
 
-    route_x[2]=2
-    route_y[2]=0
+            self.chain(now_row - 1, now_col, drop, count + 1)
+            self.chain(now_row + 1, now_col, drop, count + 1)
+            self.chain(now_row, now_col - 1, drop, count + 1)
+            self.chain(now_row, now_col + 1, drop, count + 1)# }}}
 
-    route_x[3]=3
-    route_y[3]=0
+    def evaluate(self):# {{{
+        value = 0
+        self.chainflag = [[0 for _ in range(self.col)] for _ in range(self.row)]
+        for i in range(self.row):
+            for j in range(self.col):
+                if self.chainflag[i][j] == 0 and self.field[i][j] != 0:
+                    max_count = 0
+                    self.dummy = [[0 for _ in range(self.col)] for _ in range(self.row)]
+                    self.chain(i, j, self.field[i][j], 1)
+                    if self.max_count >= 3:
+                        if self.check() == 1:
+                            value += 1
+        return value# }}}
 
-    route_x[4]=4
-    route_y[4]=0
+    def check(self):# {{{
+        # if drop chain 3 times over, return 1
+        v = 0
+        for i in range(self.row):
+            for j in range(self.col - 2):
+                if self.dummy[i][j] == -1 and self.dummy[i][j + 1] == -1 and self.dummy[i][j + 2] == -1 and \
+                 self.field[i][j] == self.field[i][j + 1] and self.field[i][j] == self.field[i][j +2]:
+                    self.t_erace[i][j] = -1
+                    self.t_erace[i][j + 1] = -1
+                    self.t_erace[i][j + 2] = -1
+                    v = 1
 
-    route_x[5]=5
-    route_y[5]=0
+        for i in range(self.row - 2):
+            for j in range(self.col):
+                if self.dummy[i][j] == -1 and self.dummy[i + 1][j] == -1 and self.dummy[i + 2][j] == -1 and \
+                 self.field[i][j] == self.field[i + 1][j] and self.field[i][j] == self.field[i + 2][j]:
+                    self.t_erace[i][j] = -1
+                    self.t_erace[i + 1][j] = -1
+                    self.t_erace[i + 2][j] = -1
+                    v = 1
+        return v  # 0: 0 combo, 1: some combo
+    # }}}
 
-    route_x[6]=6
-    route_y[6]=0
+    def sum_e(self): # {{{
+        # consider "otoshi",  not consider "ochikon" , and caliculate combo
+        combo = 0
+        while(1):
+            self.t_erace = [[0 for _ in range(self.col)] for _ in range(self.row)]
+            a = self.evaluate()
+            if a == 0:  # when 0 combo, break
+                break
+            for i in range(self.row):
+                for j in range(self.col):
+                    if self.t_erace[i][j] == -1:
+                        self.field[i][j] = 0  # clear combo drop
+            self.fall()
+            combo += a
+        return combo # }}}
 
-    now_col = route_x[0]
-    now_row = route_y[0]
-
-    for i in range(6):
-        swap(field, now_row, now_col, route_y[i], route_x[i])
-        now_col = route_x[i]
-        now_row = route_y[i]# }}}
 
 if __name__ == "__main__":
     pd_cmb = pd_combo(ROW, COL)
@@ -170,12 +179,10 @@ if __name__ == "__main__":
     print("\nsetted field")
     pd_cmb.show_field()
 
-    # operation(field)
-    # print("\noperated field")
-    # show_field(field)
+    pd_cmb.operation()
+    print("\noperated field")
+    pd_cmb.show_field()
 
-    # combo = sum_e(field, max_count)
-    # print("\nafter combo, field")
-    # show_field(field)
-    # print("combo:"+str(combo))
+    combo = pd_cmb.sum_e()
+    print("\ncombo:"+str(combo))
 
