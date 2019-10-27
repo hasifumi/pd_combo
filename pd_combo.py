@@ -7,44 +7,59 @@ import pprint
 ROW = 5
 COL = 6
 
-field = [[0 for _ in range(COL)] for _ in range(ROW)]
-chainflag = [[0 for _ in range(COL)] for _ in range(ROW)]
-dummy = [[0 for _ in range(COL)] for _ in range(ROW)]
-t_erace = [[0 for _ in range(COL)] for _ in range(ROW)]
-route_x = [0] * 100
-route_y = [0] * 100
-max_count = 0
+class pd_combo():
+    def __init__(self, row, col, field=None):
+        self.row = row
+        self.col = col
+        if field != None:
+            self.field = field
+        else:
+            self.field = [[0 for _ in range(col)] for _ in range(row)]
+        self.chainflag = [[0 for _ in range(col)] for _ in range(row)]
+        self.dummy = [[0 for _ in range(col)] for _ in range(row)]
+        self.t_erace = [[0 for _ in range(col)] for _ in range(row)]
+        self.route_x = [0] * 100
+        self.route_y = [0] * 100
+        self.max_count = 0
 
-def init():# {{{
-    field = [[random.randint(0, 6) for _ in range(COL)] for _ in range(ROW)]
-    return field# }}}
+    def make_field(self):# {{{
+        for i in range(self.row):
+            for j in range(self.col):
+                self.field[i][j] = random.randint(0, 6)# }}}
 
-def make_field(field):# {{{
-    for i in range(ROW):
-        for j in range(COL):
-            field[i][j] = random.randint(0, 6)# }}}
+    def show_field(self):# {{{
+        for i in range(self.row):
+            for j in range(self.col):
+                print(self.field[i][j], end="")
+            print("\n", end="")# }}}
 
-def show_field(field):# {{{
-    for i in range(ROW):
-        for j in range(COL):
-            print(field[i][j], end="")
-        print("\n", end="")# }}}
+    def fall(self):# {{{
+        for i in range(self.row):
+            for j in range(self.col):
+                for k in range(self.row):
+                    if k+1 == self.row:
+                        break
+                    if self.field[k+1][j] == 0:
+                        self.field[k+1][j] = self.field[k][j]
+                        self.field[k][j] = 0# }}}
 
-def fall(field):# {{{
-    for i in range(ROW):
-        for j in range(COL):
-            for k in range(ROW):
-                if k+1 == ROW:
-                    break
-                if field[k+1][j] == 0:
-                    field[k+1][j] = field[k][j]
-                    field[k][j] = 0# }}}
+    def set(self):# {{{
+        for i in range(self.row):
+            for j in range(self.col):
+                if self.field[i][j] == 0:
+                    self.field[i][j] = random.randint(1, 6)# }}}
 
-def set(field):# {{{
-    for i in range(ROW):
-        for j in range(COL):
-            if field[i][j] == 0:
-                field[i][j] = random.randint(1, 6)# }}}
+# field = [[0 for _ in range(COL)] for _ in range(ROW)]
+# chainflag = [[0 for _ in range(COL)] for _ in range(ROW)]
+# dummy = [[0 for _ in range(COL)] for _ in range(ROW)]
+# t_erace = [[0 for _ in range(COL)] for _ in range(ROW)]
+# route_x = [0] * 100
+# route_y = [0] * 100
+# max_count = 0
+
+# def init():# {{{
+#     field = [[random.randint(0, 6) for _ in range(COL)] for _ in range(ROW)]
+#     return field# }}}
 
 def swap(field, i1, j1, i2, j2):# {{{
     temp = field[i1][j1]
@@ -149,16 +164,18 @@ def operation(field):# {{{
         now_row = route_y[i]# }}}
 
 if __name__ == "__main__":
-    set(field)
+    pd_cmb = pd_combo(ROW, COL)
+
+    pd_cmb.set()
     print("\nsetted field")
-    show_field(field)
+    pd_cmb.show_field()
 
-    operation(field)
-    print("\noperated field")
-    show_field(field)
+    # operation(field)
+    # print("\noperated field")
+    # show_field(field)
 
-    combo = sum_e(field, max_count)
-    print("\nafter combo, field")
-    show_field(field)
-    print("combo:"+str(combo))
+    # combo = sum_e(field, max_count)
+    # print("\nafter combo, field")
+    # show_field(field)
+    # print("combo:"+str(combo))
 
