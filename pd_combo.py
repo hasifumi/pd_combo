@@ -10,9 +10,9 @@ import operator
 ROW = 5
 COL = 6
 #MAX_TURN = 40
-MAX_TURN = 4
+MAX_TURN = 20
 #BEAM_WIDTH = 5000
-BEAM_WIDTH = 8
+BEAM_WIDTH = 100
 
 class member(): # route pattern{{{
     def __init__(self, nowC, nowR, prev=-1, length=MAX_TURN):
@@ -211,18 +211,9 @@ class pd_combo():
                 cand = member(j, i, -1)
                 cand.movei[0]= [j, i]
                 queue.append(cand)
-        #print("len(queue):"+str(len(queue)))
-        #print("type(queue[0]):"+str(type(queue[0])))
-        #print("queue[i].movei:")
-        #for i in range(len(queue)):
-        #    pprint.pprint(queue[i].movei)
-        #    #print(queue[i])
 
         dx = [-1,  0, 0, 1]
         dy = [ 0, -1, 1, 0]
-
-        #best_action = Action()
-        #max_value = 0
 
         for p in range(1,self.max_turn):
             pqueue = []
@@ -244,7 +235,7 @@ class pd_combo():
                         self.route = copy.deepcopy(cand.movei)
                         self.operation()
                         #print("operated field")
-                        self.show_field()
+                        #self.show_field()
                         cand.score = self.sum_e()
                         #print("cand.score:"+str(cand.score))
                         cand.prev = j
@@ -273,13 +264,15 @@ if __name__ == "__main__":
     repeat_count = 1
     for i in range(repeat_count):
         #pd_cmb = pd_combo(3, 4)
-        pd_cmb = pd_combo(4, 5)
+        #pd_cmb = pd_combo(4, 5)
+        pd_cmb = pd_combo(ROW, COL)
         pd_cmb.set()  # make initial filed
+        print("\nsetted field")
         pd_cmb.show_field()
         pd_cmb.f_field = copy.deepcopy(pd_cmb.field)  # copy initial field
         best_member = pd_cmb.beam_search()  # best member(route, score,,,)
-        #print("(x, y): ("+str(best_member.movei[0][0])+", "+str(best_member.movei[0][1])+")")
-        #print(best_member.movei)
+        print("(x, y): ("+str(best_member.movei[0][0])+", "+str(best_member.movei[0][1])+")")
+        print(best_member.movei)
 
         #for i in range(pd_cmb.max_turn):
         #    if best_member.movei[i][0] == -1 or best_member.movei[i][1] == -1 :
@@ -293,50 +286,10 @@ if __name__ == "__main__":
         #    if best_member.movei[i][1] == (best_member.movei[i - 1][1] - 1):
         #        print("DOWN")
         #    print("\n")
+        pd_cmb.field  = copy.deepcopy(pd_cmb.f_field)
+        pd_cmb.route = copy.deepcopy(best_member.movei)
+        pd_cmb.operation()
+        print("\noperated field")
+        pd_cmb.show_field()
         avg += best_member.score
     print("avarage score:"+str(avg/repeat_count))
-
-
-    #pd_cmb = pd_combo(ROW, COL)
-
-    #pd_cmb.set()
-    #print("\nsetted field")
-    #pd_cmb.count_drop()
-    #print("\nfire(1):" +str(pd_cmb.d_1), end="")
-    #print(", water(2):"+str(pd_cmb.d_2), end="")
-    #print(", wood(3):" +str(pd_cmb.d_3), end="")
-    #print(", light(4):"+str(pd_cmb.d_4), end="")
-    #print(", dark(5):" +str(pd_cmb.d_5), end="")
-    #print(", cure(6):" +str(pd_cmb.d_6))
-    #pd_cmb.show_field()
-    ##print("\n")
-    ##print(pd_cmb.route)
-    #pd_cmb.f_field = copy.deepcopy(pd_cmb.field)
-    #print("\nf_field")
-    #pd_cmb.show_f_field()
-
-    #pd_cmb.route[0] = [0, 0]
-    #pd_cmb.route[1] = [1, 0]
-    #pd_cmb.route[2] = [2, 0]
-    #pd_cmb.route[3] = [3, 0]
-    #pd_cmb.route[4] = [4, 0]
-    #pd_cmb.route[5] = [5, 0]
-
-    ##print(pd_cmb.route)
-    #pd_cmb.operation()
-    #print("\noperated field")
-    #pd_cmb.show_field()
-
-    #combo = pd_cmb.sum_e()
-    #print("\ncombo:"+str(combo))
-
-    ##mem1 = member(1, 0, -1)
-    ##print("\nmem1.score:"+str(mem1.score))
-    ##print("mem1.nowC:"+str(mem1.nowC))
-    ##print("mem1.nowR:"+str(mem1.nowR))
-    ##print("len(mem1.movei):"+str(len(mem1.movei)))
-    ##print("mem1.movei[0][0]:"+str(mem1.movei[0][0]))
-    ##print("mem1.movei[0][1]:"+str(mem1.movei[0][1]))
-    ##print("mem1.movei[1][0]:"+str(mem1.movei[1][0]))
-    ##print("mem1.movei[1][1]:"+str(mem1.movei[1][1]))
-
