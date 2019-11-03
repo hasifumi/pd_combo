@@ -7,9 +7,8 @@ import copy
 import pprint
 import operator
 import time
+import numpy
 import numpy as np
-import sys
-import numba
 
 ROW = 5
 COL = 6
@@ -25,7 +24,7 @@ class member(): # route pattern{{{
         self.nowR  = nowR # now row
         self.prev = prev # previous position (1:up, 2:down, 3:left, 4:right, -1:None)
         self.movei = [[-1] * 2] * length
-        #self.movei = np.full(length * 2, -1, dtype=np.int8).reshape(length, 2)
+        #self.movei = np.full(length, 2, dtype=np.int)
         # }}}
 
 class pd_combo():
@@ -37,24 +36,18 @@ class pd_combo():
         if field != None:
             self.field = field
         else:
-            #self.field = [[0 for _ in range(self.col)] for _ in range(self.row)]
+            self.field = [[0 for _ in range(self.col)] for _ in range(self.row)]
             #self.field = [[0] * self.col] * self.row
-            self.field = np.zeros(self.row * self.col, dtype=np.int8).reshape(self.row, self.col)
-        #self.chainflag = [[0 for _ in range(self.col)] for _ in range(self.row)]
+        self.chainflag = [[0 for _ in range(self.col)] for _ in range(self.row)]
         #self.chainflag = [[0] * self.col] * self.row
-        self.chainflag = np.zeros(self.row * self.col, dtype=np.int8).reshape(self.row, self.col)
-        #self.dummy = [[0 for _ in range(self.col)] for _ in range(self.row)]
+        self.dummy = [[0 for _ in range(self.col)] for _ in range(self.row)]
         #self.dummy = [[0] * self.col] * self.row
-        self.dummy = np.zeros(self.row * self.col, dtype=np.int8).reshape(self.row, self.col)
-        #self.t_erace = [[0 for _ in range(self.col)] for _ in range(self.row)]
+        self.t_erace = [[0 for _ in range(self.col)] for _ in range(self.row)]
         #self.t_erace = [[0] * self.col] * self.row
-        self.t_erace = np.zeros(self.row * self.col, dtype=np.int8).reshape(self.row, self.col)
         self.max_count = 0  # chained drop count
         self.route = [[-1] * 2] * self.max_turn
-        #self.f_field = [[0 for _ in range(self.col)] for _ in range(self.row)]
+        self.f_field = [[0 for _ in range(self.col)] for _ in range(self.row)]
         #self.f_field = [[0] * self.col] * self.row
-        self.f_field = np.zeros(self.row * self.col, dtype=np.int8).reshape(self.row, self.col)
-        self.max_count = 0  # chained drop count
         self.d_1 = 0 # fire
         self.d_2 = 0 # water
         self.d_3 = 0 # wood
@@ -69,12 +62,6 @@ class pd_combo():
                 self.field[i][j] = random.randint(0, 6)# }}}
 
     def show_field(self):# {{{
-        for i in range(self.row):
-            for j in range(self.col):
-                print(self.field[i, j], end="")
-            print("\n", end="")# }}}
-
-    def show_field2(self):# {{{
         for i in range(self.row):
             for j in range(self.col):
                 print(self.field[i][j], end="")
@@ -127,16 +114,16 @@ class pd_combo():
                 if self.field[i][j] == 1:
                     self.d_1 += 1
                 elif self.field[i][j] == 2:
-                     self.d_2 += 1
+                    self.d_2 += 1
                 elif self.field[i][j] == 3:
-                     self.d_3 += 1
+                    self.d_3 += 1
                 elif self.field[i][j] == 4:
-                     self.d_4 += 1
+                    self.d_4 += 1
                 elif self.field[i][j] == 5:
-                     self.d_5 += 1
+                    self.d_5 += 1
                 elif self.field[i][j] == 6:
-                     self.d_6 += 1
-         # }}}
+                    self.d_6 += 1
+        # }}}
 
     def swap(self, i1, j1, i2, j2):# {{{
         temp = self.field[i1][j1]
@@ -294,19 +281,15 @@ if __name__ == "__main__":
         #print("pd_cmb.col:"+str(pd_cmb.col))
         #print("pd_cmb.row:"+str(pd_cmb.row))
         #print(pd_cmb.field)
-        #print("pd_cmb.field size:"+str(sys.getsizeof(pd_cmb.field)))
-        #print(pd_cmb.field.dtype)
         #print("\ninitial field")
         #pd_cmb.show_field()
         pd_cmb.set()  # make initial filed
         print("\nsetted field")
         pd_cmb.show_field()
-        #pd_cmb.show_field2()
-
         pd_cmb.f_field = copy.deepcopy(pd_cmb.field)  # copy initial field
         best_member = pd_cmb.beam_search()  # best member(route, score,,,)
-        #print("(x, y): ("+str(best_member.movei[0][0])+", "+str(best_member.movei[0][1])+")")
-        #print(best_member.movei)
+        print("(x, y): ("+str(best_member.movei[0][0])+", "+str(best_member.movei[0][1])+")")
+        print(best_member.movei)
 
         #for i in range(pd_cmb.max_turn):
         #    if best_member.movei[i][0] == -1 or best_member.movei[i][1] == -1 :
@@ -326,7 +309,7 @@ if __name__ == "__main__":
         print("\noperated field")
         pd_cmb.show_field()
         elapsed_time = time.time() - start_time
-        #print("elapsed_time:{0}".format(elapsed_time) + "[sec]")
+        print("elapsed_time:{0}".format(elapsed_time) + "[sec]")
         avg += best_member.score
         avg_time += elapsed_time
     print("avarage score:"+str(avg/repeat_count))
