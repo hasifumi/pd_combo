@@ -412,20 +412,23 @@ int main() {
 		memcpy(f_field,field,sizeof(field));
 		Action tmp=BEAM_SEARCH();
 		memcpy(route,tmp.moving,sizeof(tmp.moving));
-		// printf("(x,y)=(%d,%d)\n",route[0][1],route[0][0]);
-		// for(j=1;j<MAX_TURN;j++){
-		// 	if(route[j][1]==-1||route[j][0]==-1){break;}
-		// 	if(route[j][1]==route[j-1][1]+1){printf("RIGHT");}
-		// 	if(route[j][1]==route[j-1][1]-1){printf("LEFT");}
-		// 	if(route[j][0]==route[j-1][0]+1){printf("DOWN");}
-		// 	if(route[j][0]==route[j-1][0]-1){printf("UP");}
-		// 	printf("\n");
-		// }
+		printf("(x,y)=(%d,%d)\n",route[0][1],route[0][0]);
+		for(j=1;j<MAX_TURN;j++){
+			if(route[j][1]==-1||route[j][0]==-1){break;}
+			if(route[j][1]==route[j-1][1]+1){printf("RIGHT, ");}
+			if(route[j][1]==route[j-1][1]-1){printf("LEFT, ");}
+			if(route[j][0]==route[j-1][0]+1){printf("DOWN, ");}
+			if(route[j][0]==route[j-1][0]-1){printf("UP, ");}
+			// printf("\n");
+		}
+		printf("\n");
 		memcpy(field,f_field,sizeof(f_field));
 		operation();
 		printf("operated field\n");
 		show_field();
 		int combo=sum_e();
+		printf("after fall\n");
+		show_field();
 		printf("%dƒRƒ“ƒ{\n",combo);
 		avg+=(double)combo;
 	}

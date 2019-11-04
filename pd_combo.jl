@@ -3,8 +3,8 @@
 
 ROW = 5
 COL = 6
-MAX_TURN = 40
-BEAM_WIDTH =  5000
+MAX_TURN = 70
+BEAM_WIDTH = 5000
 
 field = zeros(Int8, ROW, COL)
 f_field = zeros(Int8, ROW, COL)
@@ -46,12 +46,17 @@ function set(field1=[])#={{{=#
 	    for i in 1:ROW
 	    	for j in 1:COL
 	    		if field[i, j] == 0
-	    			global field[i, j] = rand(1:6)
+	    			field[i, j] = rand(1:6)
 	    		end
 	    	end
 	    end
     else
-        global field = copy(field1)
+	    for i in 1:ROW
+	    	for j in 1:COL
+                w = (i-1)*COL+j
+                field[i, j] = parse(Int8, field1[(i-1)*COL+j])
+	    	end
+	    end
     end
 end#=}}}=#
 
@@ -128,6 +133,7 @@ function evaluate()#={{{=#
     value = 0
     chainflag = zeros(Int8, ROW, COL)
     for i in 1:ROW
+        flg_row = 0
         for j in 1:COL
             if chainflag[i, j] == 0 && field[i, j] != 0
                 global max_count = 0
@@ -139,6 +145,15 @@ function evaluate()#={{{=#
                     end
                 end
             end
+            if j <= COL-1
+                if field[i, j] != 0 && field[i, j] == field[i, j+1]
+                    flg_row += 1
+                    #println("flg_row:", flg_row)
+                end
+            end
+        end
+        if flg_row == COL-1
+            value += 10
         end
     end
     return value
@@ -197,6 +212,7 @@ function beam_search()#={{{=#
     global field, f_field, chainflag, dummy, t_erace, max_count, route
 
     que_member = member[]
+    temp_que = member[]
     i = 1
     for i in 1:ROW
         for j in 1:COL
@@ -218,7 +234,12 @@ function beam_search()#={{{=#
         #pque_member = Array{member}(undef, 1)
         pque_member = member[]
         while length(que_member) != 0
-            temp = pop!(que_member)
+            #temp = pop!(que_member)
+            temp = que_member[1]
+            #println("before length(que_member)", length(que_member))
+            temp_que = copy(que_member[2:end])
+            que_member = copy(temp_que)
+            #println("after length(que_member)", length(que_member))
             #println("temp:", temp)
             for j in 1:length(dx)
                 field = copy(f_field)
@@ -229,7 +250,7 @@ function beam_search()#={{{=#
                 cand.prev = temp.prev
                 cand.movei = copy(temp.movei)
                 if ( 1 <= temp.nowC + dx[j] <= COL && 1 <= temp.nowR + dy[j] <= ROW )
-                    if cand.prev + j == 3
+                    if cand.prev + j == 5
                         continue
                     end
                     cand.nowC = temp.nowC + dx[j]
@@ -271,10 +292,7 @@ end#=}}}=#
 function main()#={{{=#
     global field, f_field, chainflag, dummy, t_erace, max_count, route
 	set()
-    #set([1 1 1 1 1 1; 2 2 2 2 2 2; 3 3 3 3 3 3; 4 4 4 4 4 4; 5 5 5 5 5 5;])
-    #set([3 1 5 3 1 1; 5 3 3 4 1 1; 6 1 2 5 5 1; 1 2 1 6 6 5; 2 4 6 6 3 3;])  # 5 combo
-    #set([3 5 3 1 1 1; 1 5 3 2 4 2; 1 1 1 1 1 1; 3 5 3 4 6 2; 2 1 5 5 5 2;])  # 6 combo
-
+    #set("315211554451322114424566531621")  # 15 combo
     println("initial field.")
     global field, f_field, route
     show(field)
