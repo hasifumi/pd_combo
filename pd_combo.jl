@@ -3,8 +3,8 @@
 
 ROW = 5
 COL = 6
-MAX_TURN = 30
-BEAM_WIDTH = 5000
+MAX_TURN = 50
+BEAM_WIDTH =  5000
 
 field = zeros(Int8, ROW, COL)
 f_field = zeros(Int8, ROW, COL)
@@ -29,7 +29,7 @@ function sort_member(a, b)#={{{=#
     return false
 end#=}}}=#
 
-# sort example{{{
+# sort example{{{{{{
 #    m1 = member(1, 1, 3, 4, [1 1; 2 2;])
 #    m2 = member(3, 2, 3, 4, [])
 #    m3 = member(2, 3, 3, 4, [])
@@ -38,9 +38,10 @@ end#=}}}=#
 #    arr_member[2] = m2
 #    arr_member[3] = m3
 #    sort!(arr_member, lt=sort_member, rev=true)
-#}}}
+#}}}}}}
 
 function set(field1=[])#={{{=#
+    global field, f_field, chainflag, dummy, t_erace, max_count, route
     if field1 == []
 	    for i in 1:ROW
 	    	for j in 1:COL
@@ -64,6 +65,7 @@ function show(field)#={{{=#
 end#=}}}=#
 
 function fall()#={{{=#
+    global field, f_field, chainflag, dummy, t_erace, max_count, route
     for i in 1:ROW
         for j in 1:COL
             for k in 1:ROW
@@ -80,14 +82,16 @@ function fall()#={{{=#
 end#=}}}=#
 
 function swap(i1, j1, i2, j2)#={{{=#
+    global field, f_field, chainflag, dummy, t_erace, max_count, route
     temp = field[i1, j1]
     global field[i1, j1] = field[i2, j2]
     global field[i2, j2] = temp
 end#=}}}=#
 
 function operation()#={{{=#
-    now_col = route[1, 1]
-    now_row = route[1, 2]
+    global field, f_field, chainflag, dummy, t_erace, max_count, route
+    now_col = route[1, 2]
+    now_row = route[1, 1]
     #print("now_col" , now_col , ", now_row:" , now_row, "\n")
 
     for i in 1:MAX_TURN
@@ -101,6 +105,7 @@ function operation()#={{{=#
 end#=}}}=#
 
 function chain(now_row, now_col, drop, count)#={{{=#
+    global field, f_field, chainflag, dummy, t_erace, max_count, route
     if now_row == 0 || now_row > ROW || now_col == 0 || now_col > COL
         return
     end
@@ -119,6 +124,7 @@ function chain(now_row, now_col, drop, count)#={{{=#
 end#=}}}=#
 
 function evaluate()#={{{=#
+    global field, f_field, chainflag, dummy, t_erace, max_count, route
     value = 0
     chainflag = zeros(Int8, ROW, COL)
     for i in 1:ROW
@@ -139,6 +145,7 @@ function evaluate()#={{{=#
 end#=}}}=#
 
 function check()#={{{=#
+    global field, f_field, chainflag, dummy, t_erace, max_count, route
     v = 0
     for i in 1:ROW
         for j in 1:COL-2
@@ -165,6 +172,7 @@ function check()#={{{=#
 end#=}}}=#
 
 function sum_e()#={{{=#
+    global field, f_field, chainflag, dummy, t_erace, max_count, route
     combo = 0
     while(1==1)
         global t_erace = zeros(Int8, ROW, COL)
@@ -185,14 +193,98 @@ function sum_e()#={{{=#
     return combo
 end#=}}}=#
 
+function beam_search()
+    global field, f_field, chainflag, dummy, t_erace, max_count, route
+
+    que_member = member[]
+    i = 1
+    for i in 1:ROW
+        for j in 1:COL
+            cand = member(0, i, j, -1, [])
+            cand.movei = fill(-1, MAX_TURN, 2)
+            cand.movei[1, :] = [i j]
+            push!(que_member, cand)
+        end
+    end
+    #println("size(que_member, 1):", size(que_member, 1))
+    #println("que_member[1]:", que_member[1])
+
+    dx = [-1;  0; 0; 1]
+    dy = [ 0; -1; 1; 0]
+    max_value = 0
+    width = 0
+
+    for i in 1:MAX_TURN
+        #pque_member = Array{member}(undef, 1)
+        pque_member = member[]
+        while length(que_member) != 0
+            temp = pop!(que_member)
+            #println("temp:", temp)
+            for j in 1:length(dx)
+                field = copy(f_field)
+                cand = member(0, i, j, -1, [])
+                cand.score = temp.score
+                cand.nowC = temp.nowC
+                cand.nowR = temp.nowR
+                cand.prev = temp.prev
+                cand.movei = copy(temp.movei)
+                if ( 1 <= temp.nowC + dx[j] <= COL && 1 <= temp.nowR + dy[j] <= ROW )
+                    if cand.prev + j == 3
+                        continue
+                    end
+                    cand.nowC = temp.nowC + dx[j]
+                    cand.nowR = temp.nowR + dy[j]
+                    #cand.movei[i, :] = [cand.nowC cand.nowR;]
+                    cand.movei[i, :] = [temp.nowC+dx[j] temp.nowR+dy[j]]
+                    #println("temp.nowC:", temp.nowC, ", temp.nowR:", temp.nowR, ", dx[j]:", dx[j], ", dy[j]:", dy[j])
+                    #println("temp.nowC + dx[j]:", temp.nowC + dx[j])
+                    #println("temp.nowR + dy[j]:", temp.nowR + dy[j])
+                    #println("cand.movei[i, :] in beam_search:", cand.movei[i, :])
+                    route = copy(cand.movei)
+                    #println("route in beam_search:", route)
+                    operation()
+                    cand.score = sum_e()
+                    #println("cand.score in beam_search:", cand.score)
+                    cand.prev = j
+                    push!(pque_member, cand)
+                end
+            end
+        end
+        sort!(pque_member, lt=sort_member, rev=true)
+
+        if MAX_TURN < length(pque_member)
+            width = MAX_TURN
+        else
+            width = length(pque_member)
+        end
+        que_member = Array{member}(undef, width)
+        que_member[1:width, : ] = pque_member[1:width, : ]
+    end
+
+    return que_member[1]  # return best_member
+
+    best_member = que_member[1]
+    return best_member
+end
+
 function main()#={{{=#
+    global field, f_field, chainflag, dummy, t_erace, max_count, route
 	set()
     #set([1 1 1 1 1 1; 2 2 2 2 2 2; 3 3 3 3 3 3; 4 4 4 4 4 4; 5 5 5 5 5 5;])
     println("initial field.")
+    global field, f_field, route
     show(field)
     f_field = copy(field)
-    route[1:6 , : ] = [1 1; 2 1; 3 1; 4 1; 5 1; 6 1;]
-    print(route[1:6, :], "\n")
+    #route[1:6 , : ] = [1 1; 2 1; 3 1; 4 1; 5 1; 6 1;]
+    #print(route[1:6, :], "\n")
+
+    #best_member = member()
+    best_member = beam_search()
+    println("best_member:",  best_member)
+    #println(size(best_member.movei, 1))
+    route[1:size(best_member.movei, 1), : ] = best_member.movei
+    #println("route:",  route)
+    field = copy(f_field)
     operation()
     println("after operation")
     show(field)
@@ -201,10 +293,6 @@ function main()#={{{=#
     println("after sum_e")
     show(field)
 
-    #fall()
-    #swap(1, 1, 2, 1)
-    #println("after swap")
-    #show(field)
 end#=}}}=#
 
 main()
