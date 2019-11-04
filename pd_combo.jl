@@ -3,7 +3,7 @@
 
 ROW = 5
 COL = 6
-MAX_TURN = 50
+MAX_TURN = 40
 BEAM_WIDTH =  5000
 
 field = zeros(Int8, ROW, COL)
@@ -193,7 +193,7 @@ function sum_e()#={{{=#
     return combo
 end#=}}}=#
 
-function beam_search()
+function beam_search()#={{{=#
     global field, f_field, chainflag, dummy, t_erace, max_count, route
 
     que_member = member[]
@@ -261,16 +261,20 @@ function beam_search()
         que_member[1:width, : ] = pque_member[1:width, : ]
     end
 
+    #println(que_member[1:10, : ])
     return que_member[1]  # return best_member
 
     best_member = que_member[1]
     return best_member
-end
+end#=}}}=#
 
 function main()#={{{=#
     global field, f_field, chainflag, dummy, t_erace, max_count, route
 	set()
     #set([1 1 1 1 1 1; 2 2 2 2 2 2; 3 3 3 3 3 3; 4 4 4 4 4 4; 5 5 5 5 5 5;])
+    #set([3 1 5 3 1 1; 5 3 3 4 1 1; 6 1 2 5 5 1; 1 2 1 6 6 5; 2 4 6 6 3 3;])  # 5 combo
+    #set([3 5 3 1 1 1; 1 5 3 2 4 2; 1 1 1 1 1 1; 3 5 3 4 6 2; 2 1 5 5 5 2;])  # 6 combo
+
     println("initial field.")
     global field, f_field, route
     show(field)
